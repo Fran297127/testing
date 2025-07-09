@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          ports:
+            - containerPort: 8080  # Port untuk akses Jenkins UI
+          env:
+            - name: JAVA_OPTS
+              value: "-Djenkins.install.runSetupWizard=false"  # Skip setup wizard
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home  # Direktori tempat Jenkins menyimpan data dan konfigurasi
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-pvc  # PVC yang akan digunakan untuk penyimpanan data Jenkins
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+spec:
+  selector:
+    app: jenkins
+  ports:
+    - port: 8080  # Port untuk akses Jenkins UI
+      targetPort: 8080
+  type: NodePort  # Gunakan NodePort jika tidak menggunakan LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi  # Ukuran penyimpanan untuk Jenkins (bisa disesuaikan)
+  storageClassName: managed-nfs-storage  # Sesuaikan dengan storage class di OpenShift (misalnya "managed-nfs-storage")
