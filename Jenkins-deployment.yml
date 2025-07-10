@@ -52,5 +52,9 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi  # Ukuran penyimpanan untuk Jenkins (bisa disesuaikan)
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
   storageClassName: managed-nfs-storage  # Sesuaikan dengan storage class di OpenShift (misalnya "managed-nfs-storage")
